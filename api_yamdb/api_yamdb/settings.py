@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -112,11 +113,11 @@ EMAIL_FILE_PATH = (BASE_DIR, 'message_email')
 DEFAULT_FROM_EMAIL = 'yamdb@yamdb.com'
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }
 
