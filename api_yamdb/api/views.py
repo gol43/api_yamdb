@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.models import User
+from reviews.models import User
 from django.conf import settings
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -54,7 +54,7 @@ class Signup(APIView):
         username = serializer.validated_data.get('username')
         email = serializer.validated_data.get('email')
         try:
-            user = User.objects.get(username__iexact=username, email_iexact=email)
+            user = User.objects.get(username__iexact=username, email__iexact=email)
         except ObjectDoesNotExist:
             user_serializer = SignupSerializer(data=request.data)
             user_serializer.is_valid(raise_exception=True)
@@ -62,7 +62,7 @@ class Signup(APIView):
         confirmation = default_token_generator.make_token(user)
         message_code = 'Ваш код для получения API токена'
         message = f'Код подтверждения - {confirmation}'
-        send_mail(message_code, message, settings.EMAIL_FROM, (email,))
+        send_mail(message_code, message, settings.DEFAULT_FROM_EMAIL, (email,))
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
