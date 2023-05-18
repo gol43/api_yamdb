@@ -1,16 +1,19 @@
-from django.core.mail import send_mail
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.tokens import default_token_generator
-from reviews.models import User
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .permissions import AdminOrReadOnlyPermission, AdminOnlyPermission, IsAdminModeratorOwnerOrReadOnly
+from reviews.models import User
+from .permissions import AdminOnlyPermission
 from .serializers import UserSerializer, UserEditSerializer, SignupSerializer, TokenSerializer
+
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -22,14 +25,14 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request):
         serializer = UserSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @action(methods=['GET', 'PATCH'], detail=False, permission_classes=(permissions.IsAuthenticated,), url_path='me')
+    @action(methods=['GET', 'PATCH'], detail=False,
+            permission_classes=(permissions.IsAuthenticated,), url_path='me')
     def get_current_user_info(self, request):
         user = request.user
         if request.method == 'PATCH':
@@ -66,6 +69,7 @@ class Signup(APIView):
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
+
 class GetToken(TokenRefreshView):
     permission_classes = (permissions.AllowAny,)
 
@@ -76,4 +80,8 @@ class GetToken(TokenRefreshView):
         try:
             user = User.objects.get(username=data['username'])
         except User.DoesNotExist:
-            return Response({'username': 'Пользователь не найден'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'username': 'Пользователь не найден'},
+                            status=status.HTTP_404_NOT_FOUND)
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        return Response({'access_token': access_token}, status=status.HTTP_200_OK)

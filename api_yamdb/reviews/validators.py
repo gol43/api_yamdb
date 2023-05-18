@@ -3,13 +3,11 @@ import re
 from django.core.exceptions import ValidationError
 
 
-def validate_name(value):
-    if value == 'me':
-        raise ValidationError(
-            ('Имя пользователя не может быть <me>')
-        )
-    if re.search(r'^[\w.@+-]+\z', value) is None:
-        raise ValidationError(
-            (f'Недопустимые символы'),
-            params={'value': value},
-        )
+def validate_username(value):
+    if len(value) > 150:
+        raise ValidationError('Длина поля username не должна превышать 150 символов')
+    pattern = r'^[\w.@+-]+$'
+    if not re.search(pattern, value):
+        raise ValidationError('Недопустимые символы', params={'value': value})
+    if value.lower() == 'me':
+        raise ValidationError("Имя не может быть 'me'")
