@@ -2,13 +2,16 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
+from .check import check_confirmation_code
 
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import User
 from .permissions import AdminOnlyPermission
@@ -21,6 +24,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated, AdminOnlyPermission)
     lookup_field = 'username'
+    pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -71,17 +75,19 @@ class Signup(APIView):
 
 
 class GetToken(TokenRefreshView):
+    ''' Получение JWT-токена за место username и confirmation_code. '''
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        try:
-            user = User.objects.get(username=data['username'])
-        except User.DoesNotExist:
-            return Response({'username': 'Пользователь не найден'},
-                            status=status.HTTP_404_NOT_FOUND)
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        return Response({'access_token': access_token}, status=status.HTTP_200_OK)
+        confirmation_code = serializer.validated_data.get('confirmation_code')
+        username = serializer.validated_data.get('username')
+        user = get_object_or_404(User, username=username)
+        if check_confirmation_code(user, confirmation_code):
+            token = AccessToken.for_user(user)
+            return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
+        return Response(
+            {'confirmation_code': ['Код не действителен!']},
+            status=status.HTTP_400_BAD_REQUEST
+        )
