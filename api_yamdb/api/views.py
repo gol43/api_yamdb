@@ -35,6 +35,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     @action(methods=['GET', 'PATCH'], detail=False,
             permission_classes=(permissions.IsAuthenticated,), url_path='me')
     def get_current_user_info(self, request):
