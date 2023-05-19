@@ -1,14 +1,17 @@
 from rest_framework import serializers
 from reviews.validators import validate_username
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=[validate_username],
+        validators=[validate_username,
+                    UniqueValidator(queryset=User.objects.all())],
         required=True,
     )
+
 
     class Meta:
         model = User
