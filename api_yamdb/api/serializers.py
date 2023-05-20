@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserEditSerializer(serializers.ModelSerializer):
 
+
     class Meta:
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
@@ -29,24 +30,20 @@ class UserEditSerializer(serializers.ModelSerializer):
 
 class SignupSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=[
-            validate_username
-        ]
+        validators=[validate_username]
     )
-    email = serializers.EmailField(
-        validators=[
-            validate_username
-        ]
-    )
+    email = serializers.EmailField(max_length=254)
+
 
     class Meta:
-        fields = ("username", "email")
         model = User
+        fields = ("username", "email")
 
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField(max_length=128)
+
 
     class Meta:
         model = User

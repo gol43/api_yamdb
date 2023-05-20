@@ -20,6 +20,7 @@ from .serializers import UserSerializer, UserEditSerializer, SignupSerializer, T
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    '''API для работы с пользователями'''
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated, AdminOnlyPermission)
@@ -54,6 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class Signup(APIView):
+    '''API для регистрации пользователей'''
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
