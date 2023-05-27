@@ -11,9 +11,10 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
-from .filters import TitleFilter
 from django.db.models import Avg
-from rest_framework import filters, generics, status, viewsets, mixins
+from .filters import TitleFilter
+from .mixins import MixinVeiew
+from rest_framework import filters, generics, status, viewsets
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from django.core.mail import send_mail
@@ -26,16 +27,9 @@ from django.conf import settings
 # чтения для представления экземпляров модели
 
 
-class CategoryView(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class CategoryView(MixinVeiew):
     """Get list of Category"""
-
-    # Везде добавили ордеринг по айди, чтобы быстрее
-    # и точнее происходило определение работы
-
-    queryset = Category.objects.all().order_by('-id')
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (AdminAndRead, )
 
@@ -46,10 +40,7 @@ class CategoryView(mixins.CreateModelMixin,
     search_fields = ('name',)
 
 
-class GenreView(mixins.CreateModelMixin,
-                mixins.ListModelMixin,
-                mixins.DestroyModelMixin,
-                viewsets.GenericViewSet):
+class GenreView(MixinVeiew):
     """Get list of Genre"""
     queryset = Genre.objects.all().order_by('-id')
     serializer_class = GenreSerializer

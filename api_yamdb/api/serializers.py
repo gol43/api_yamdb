@@ -41,7 +41,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleObjectsSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -133,6 +133,11 @@ class SignUpSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'User with thats nickname and email done already'
             )
+        return data
+
+    def validate_me(self, data):
+        if data['username'] == 'me':
+            raise serializers.ValidationError('Нельзя использовать логин me')
         return data
 
 

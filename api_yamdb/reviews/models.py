@@ -162,3 +162,19 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class GenreTitle(models.Model):
+    # добавил для csv_files:
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE)
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Genre-Title'
+
+    def __str__(self):
+        return self.genre and self.title
