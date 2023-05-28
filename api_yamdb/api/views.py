@@ -42,7 +42,7 @@ class CategoryView(MixinVeiew):
 
 class GenreView(MixinVeiew):
     """Get list of Genre"""
-    queryset = Genre.objects.all().order_by('-id')
+    queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (AdminAndRead, )
     filter_backends = (filters.SearchFilter, )

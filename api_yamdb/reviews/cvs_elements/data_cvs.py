@@ -24,12 +24,13 @@ class Command(BaseCommand):
         print("Beginning of import")
         for filename, model in default_data.items():
             with open(data_path + filename,
-                      'rt', encoding='utf-8') as data_csv:
+                      newline='', encoding='utf-8',
+                      if_exists="replace", inplace=True) as data_csv:
                 try:
                     reader = csv.DictReader(data_csv)
                     # * для распаковки словарей в список reader
-                    res = model.objects.create(model(**data)
-                                               for data in reader)
+                    res = model.objects.bulk_create(
+                        model(**data) for data in reader)
                 except model.DoesNotExist:
                     raise CommandError('File dosent exist' % filename)
                 res.opened = False

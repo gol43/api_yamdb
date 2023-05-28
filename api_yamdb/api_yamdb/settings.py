@@ -26,8 +26,15 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'reviews.apps.ReviewsConfig',
-    'api.apps.ApiConfig',
-    'django_filters'
+    'django_filters',
+    'api'
+    # 'v1.api'
+    # Я пытался запихнуть приложение api в папку v1(которая как я понял была папкой, которая внутри себя может собрать сразу несколько приложений и версий), но
+    # но у меня высвечивается ошибка, что -
+    # tests\test_07_files.py:13: in <module>
+    # assert False, f'Не найдено приложение `api` в папке {MANAGE_PATH}'
+    # E   AssertionError: Не найдено приложение `api` в папке C:\Dev\api_yamdb\api_yamdb
+    # E   assert False
 ]
 
 MIDDLEWARE = [
