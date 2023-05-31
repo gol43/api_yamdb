@@ -5,6 +5,8 @@ from reviews.models import (Title, Category,
                             Review, Comment,
                             GenreTitle)
 from collections import OrderedDict
+from django.db import transaction
+
 # https://docs.djangoproject.com/en/4.2/howto/custom-management-commands/
 # взято отсюда
 default_data = OrderedDict({
@@ -22,24 +24,23 @@ data_path = 'static/data/'
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         print("Beginning of import")
-        for filename, model in default_data.items():
-            with open(data_path + filename,
-                      newline='', encoding='utf-8',
-                      if_exists="replace", inplace=True) as data_csv:
+        with transaction.atomic():
+            for filename, model in default_data.items():
                 try:
-                    reader = csv.DictReader(data_csv)
-                    # * для распаковки словарей в список reader
-                    res = model.objects.bulk_create(
-                        model(**data) for data in reader)
+                    with open(data_path + filename,
+                              newline='', encoding='utf-8') as data_csv:
+                        reader = csv.DictReader(data_csv)
+                        model_objects = [model(**data) for data in reader]
+                        model.objects.bulk_create(model_objects)
                 except model.DoesNotExist:
-                    raise CommandError('File dosent exist' % filename)
-                res.opened = False
-                res.save
+                    raise CommandError('File does not exist: %s' % filename)
         self.stdout.write(
-            self.style.SUCCESS('All csv_data have been done' % filename)
-        )
+            self.style.SUCCESS('All csv_data have been imported'))
 
-# Если честно, то я не понимаю, что тут нужно такого писать,
-# обошёл много сайтов
-# Но толкового обьяснения не нашёл. Можете скинуть пж нужный сайт с инфой.
-# Заранее спасибо!
+# Здесь для каждого файла CSV мы сначала формируем список объектов модели (model_objects), 
+# а затем используем метод bulk_create, чтобы создать все объекты одним запросом. Весь 
+# процесс выполняется внутри менеджера контекста transaction.atomic().
+
+# Такой подход позволяет гарантировать атомарность операции создания объектов при 
+# работе с базой данных, а также обеспечивает более высокую производительность при работе 
+# с большим количеством данных.
